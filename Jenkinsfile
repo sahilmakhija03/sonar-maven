@@ -34,7 +34,7 @@ pipeline {
                   -Dsonar.projectKey=maven-try ^
                   -Dsonar.sources=src/main/java ^
                   -Dsonar.host.url=http://localhost:9000 ^
-                  -Dsonar.login=${SONAR_TOKEN}
+                  -Dsonar.login=%SONAR_TOKEN%
                 """
             }
         }
