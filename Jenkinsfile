@@ -1,16 +1,13 @@
 pipeline {
     agent any
-
     tools {
-        maven 'sonarmaven' // Ensure Maven is configured in Jenkins
+        maven 'sonarmaven' // Ensure this matches the Maven configuration in Jenkins
     }
-
     environment {
-        SONAR_TOKEN = credentials('sonar-token') // Replace with the correct credentials ID
-        JAVA_HOME = 'C:/Program Files/Java/jdk-17' // Ensure this path is correct
+        SONAR_TOKEN = credentials('sonar-token') // Replace with your credentials ID for the SonarQube token
+        JAVA_HOME = 'C:\\Program Files\\Java\\jdk-17'
         PATH = "${JAVA_HOME}\\bin;${env.PATH}"
     }
-
     stages {
         stage('Checkout') {
             steps {
@@ -19,39 +16,29 @@ pipeline {
         }
         stage('Build') {
             steps {
-                bat "mvn clean compile"
-            }
-        }
-        stage('Test') {
-            steps {
-                bat "mvn test"
+                bat 'mvn clean package'
             }
         }
         stage('SonarQube Analysis') {
             steps {
-                bat """
-                mvn sonar:sonar ^
-                  -Dsonar.projectKey=maven-try ^
-                  -Dsonar.sources=src/main/java ^
-                  -Dsonar.host.url=http://localhost:9000 ^
-                  -Dsonar.login=%SONAR_TOKEN%
-                """
-            }
-        }
-        stage('Package') {
-            steps {
-                bat "mvn package"
+                withSonarQubeEnv('sonarqube') { // Ensure this matches your SonarQube configuration
+                    bat """
+                        mvn sonar:sonar ^
+                        -Dsonar.projectKey=try-maven ^
+                        -Dsonar.sources=src/main/java ^
+                        -Dsonar.host.url=http://localhost:9000 ^
+                        -Dsonar.login=%SONAR_TOKEN%
+                    """
+                }
             }
         }
     }
-
     post {
-        
         success {
-            echo 'Pipeline executed successfully!'
+            echo 'Pipeline completed successfully.'
         }
         failure {
-            echo 'Pipeline failed. Please check the logs for details.'
+            echo 'Pipeline failed.'
         }
     }
 }
